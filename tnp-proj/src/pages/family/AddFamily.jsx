@@ -1,48 +1,104 @@
-import React from 'react'
-import PopUp from '../../components/PopUp'
-import { useState } from 'react'
+import React, { useState } from 'react';
+import axios from 'axios';
+
 const AddFamily = () => {
-  const [buttonPopup, setButtonPopup] = useState(false); 
+  const [form, setForm] = useState({
+    family_number: "",
+    name: "",
+    hof: "",
+    count: "",
+    location: "",
+    village: "",
+    contact_number: "",
+    family_unit: "",
+    ward_number: "",
+    unit_number: ""
+  });
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setForm({ ...form, [name]: value });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      await axios.post("http://localhost:5000/api/families", form); // backend API
+      alert("✅ Family added successfully!");
+      setForm({
+        family_number: "",
+        name: "",
+        hof: "",
+        count: "",
+        location: "",
+        village: "",
+        contact_number: "",
+        family_unit: "",
+        ward_number: "",
+        unit_number: ""
+      });
+    } catch (err) {
+      alert("❌ Error: " + (err.response?.data?.error || err.message));
+    }
+  };
+
   return (
- <>
-  <div class="container">
-    <form class="register-form"> 
-
-      <div class="name-row">
-        <div class="input-group">
-          <input type="text" name="firstname" required />
-          <label>Name</label>
-        </div>
-        <div class="input-group">
-          <input type="text" name="lastname" required />
-          <label>House Name</label>
-        </div>
-      </div>
-
-      <div class="input-group">
-        <input type="text" name="email" required />
-        <label>Kudumb Unit Name</label>
-      </div>
-      <div class="input-group">
-        <input type="text" name="email" required />
-        <label>Address</label>
-      </div>
-
-      <div class="input-group">
-          <input type="number" name="lastname" required />
-          <label>House Number</label>
+    <div className="container">
+      <form className="register-form" onSubmit={handleSubmit}>
+        <div className="input-group">
+          <input type="text" name="family_number" value={form.family_number} onChange={handleChange} required />
+          <label>Family Number</label>
         </div>
 
-    
+        <div className="input-group">
+          <input type="text" name="name" value={form.name} onChange={handleChange} required />
+          <label>Family Name</label>
+        </div>
 
-      <button type="submit" class="submit-btn" onClick={() => setButtonPopup(true)}>Submit</button> 
-    </form>
-    
-  <PopUp trigger={buttonPopup} setTrigger={setButtonPopup}/>
-    
-  </div>
-  </>
-  )
-}
+        <div className="input-group">
+          <input type="text" name="hof" value={form.hof} onChange={handleChange} required />
+          <label>Head of Family</label>
+        </div>
 
-export default AddFamily
+        <div className="input-group">
+          <input type="number" name="count" value={form.count} onChange={handleChange} />
+          <label>Member Count</label>
+        </div>
+
+        <div className="input-group">
+          <input type="text" name="location" value={form.location} onChange={handleChange} />
+          <label>Location</label>
+        </div>
+
+        <div className="input-group">
+          <input type="text" name="village" value={form.village} onChange={handleChange} />
+          <label>Village</label>
+        </div>
+
+        <div className="input-group">
+          <input type="text" name="contact_number" value={form.contact_number} onChange={handleChange} />
+          <label>Contact Number</label>
+        </div>
+
+        <div className="input-group">
+          <input type="text" name="family_unit" value={form.family_unit} onChange={handleChange} />
+          <label>Kudumb Unit Name</label>
+        </div>
+
+        <div className="input-group">
+          <input type="text" name="ward_number" value={form.ward_number} onChange={handleChange} />
+          <label>Ward Number</label>
+        </div>
+
+        <div className="input-group">
+          <input type="text" name="unit_number" value={form.unit_number} onChange={handleChange} />
+          <label>Unit Number</label>
+        </div>
+
+        <button type="submit" className="submit-btn">Submit</button>
+      </form>
+    </div>
+  );
+};
+
+export default AddFamily;

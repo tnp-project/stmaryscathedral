@@ -1,20 +1,52 @@
-import React from 'react';
+// src/pages/memberdetails/ViewMembers.jsx
+import React, { useEffect, useState } from "react";
 import "../../css/viewmembers.css";
+import { getMembers } from "../../api"; // <-- named import from src/api.js
 
 const ViewMembers = () => {
+  const [members, setMembers] = useState([]);
+  const [error, setError] = useState(null);
+  const [search, setSearch] = useState("");
+
+  useEffect(() => {
+    let mounted = true;
+    getMembers()
+      .then((res) => {
+        if (!mounted) return;
+        setMembers(res.data || []);
+      })
+      .catch((err) => {
+        console.error("Error fetching members:", err);
+        setError("Could not load members");
+      });
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  const filteredMembers = members.filter((m) =>
+    (m.name || "").toLowerCase().includes(search.toLowerCase())
+  );
+
   return (
     <>
-      {/* Search Bar */}
       <div className="container-input2">
-        <input type="text" placeholder="SEARCH MEMBER" name="text" className="input" />
-        <svg fill="#000000" width="20px" height="20px" viewBox="0 0 1920 1920" xmlns="http://www.w3.org/2000/svg">
-          <path d="M1408.941 1331.953 1920 1843.01 1843.01 1920l-511.059-511.059c-111.059 91.764-253.176 146.376-407.63 146.376C422.494 1555.317 0 1132.823 0 622.659 0 112.494 422.494-310 924.317-310c501.823 0 924.317 422.494 924.317 932.659 0 220.282-76.988 423.53-203.718 581.782Zm-484.624-107.718c355.059 0 643.514-288.455 643.514-643.514S1279.376-64.793 924.317-64.793 280.803 223.662 280.803 578.721c0 355.059 288.454 643.514 643.514 643.514Z" />
-        </svg>
+        <input
+          type="text"
+          placeholder="SEARCH MEMBER"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="input"
+        />
+        {/* keep your svg here */}
       </div>
 
-      {/* Members Table */}
       <div className="member-table-container1">
         <h2>Members</h2>
+
+        {error && <div style={{ color: "red", padding: "8px" }}>{error}</div>}
+
         <div className="table-wrapper1">
           <table className="member-table">
             <thead>
@@ -36,24 +68,30 @@ const ViewMembers = () => {
               </tr>
             </thead>
             <tbody>
-              {[1, 2, 3].map((i) => (
-                <tr key={i}>
-                  <td>{i}</td>
-                  <td>John Mathew</td>
-                  <td>Male</td>
-                  <td>Son</td>
-                  <td>2002-01-15</td>
-                  <td>23</td>
-                  <td>Student</td>
-                  <td>9876543210</td>
-                  <td>john@example.com</td>
-                  <td>O+</td>
-                  <td>1234-5678-9101</td>
-                  <td>F-001</td>
-                  <td>Yes</td>
-                  <td>Yes</td>
+              {filteredMembers.length > 0 ? (
+                filteredMembers.map((member, idx) => (
+                  <tr key={member._id || idx}>
+                    <td>{idx + 1}</td>
+                    <td>{member.name || `${member.firstName || ""} ${member.lastName || ""}`}</td>
+                    <td>{member.gender || ""}</td>
+                    <td>{member.relation || ""}</td>
+                    <td>{member.dob ? new Date(member.dob).toLocaleDateString() : ""}</td>
+                    <td>{member.age || ""}</td>
+                    <td>{member.occupation || ""}</td>
+                    <td>{member.phone || ""}</td>
+                    <td>{member.email || ""}</td>
+                    <td>{member.blog_group || ""}</td>
+                    <td>{member.aadhaar || member.aadhaar || ""}</td>
+                    <td>{member.family_number || member.familyNo || ""}</td>
+                    <td>{member.hof || member.isHof ? "Yes" : "No"}</td>
+                    <td>{member.baptism ? "Yes" : "No"}</td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan="14">No members found</td>
                 </tr>
-              ))}
+              )}
             </tbody>
           </table>
         </div>
