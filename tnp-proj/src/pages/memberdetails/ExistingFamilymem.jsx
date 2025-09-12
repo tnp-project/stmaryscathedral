@@ -1,7 +1,14 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import "../../css/existingfamadd.css";
 
 const ExistingFamilymem = () => {
+  const location = useLocation();
+  const [familyInfo, setFamilyInfo] = useState({
+    name: "",
+    hof: "",
+  });
+
   const [formData, setFormData] = useState({
     firstname: "",
     lastname: "",
@@ -15,16 +22,52 @@ const ExistingFamilymem = () => {
     blog_group: "",
     aadhaar: "",
     family_number: "",
-    hof: "No", // Yes/No, will convert to Boolean
-    baptismStatus: "No", // Yes/No, will convert to Boolean
+    hof: "No",
+    baptismStatus: "No",
   });
+
+  // Auto-fill family_number if passed from navigation
+  useEffect(() => {
+    if (location.state?.family_number) {
+      setFormData((prev) => ({
+        ...prev,
+        family_number: location.state.family_number,
+      }));
+      fetchFamilyDetails(location.state.family_number);
+    }
+  }, [location.state]);
+
+  // Fetch family details from backend
+  const fetchFamilyDetails = async (familyNumber) => {
+    try {
+      if (!familyNumber) return;
+      const res = await fetch(
+        `http://localhost:8080/api/families/number/${familyNumber}`
+      );
+      if (!res.ok) throw new Error("Family not found");
+      const data = await res.json();
+      setFamilyInfo({
+        name: data.name || "",
+        hof: data.hof || "",
+      });
+    } catch (err) {
+      console.error("Error fetching family details:", err.message);
+      setFamilyInfo({ name: "", hof: "" });
+    }
+  };
 
   // handle input change
   const handleChange = (e) => {
+    const { name, value } = e.target;
+
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value,
+      [name]: value,
     });
+
+    if (name === "family_number") {
+      fetchFamilyDetails(value.trim());
+    }
   };
 
   // handle submit
@@ -32,9 +75,8 @@ const ExistingFamilymem = () => {
     e.preventDefault();
 
     try {
-      // prepare payload matching backend model
       const payload = {
-        sl_no: Date.now(), // temporary unique number
+        sl_no: Date.now(),
         name: formData.firstname + " " + formData.lastname,
         gender: formData.gender,
         relation: formData.relation,
@@ -50,7 +92,7 @@ const ExistingFamilymem = () => {
         baptism: formData.baptismStatus === "Yes",
       };
 
-      const res = await fetch("http://localhost:5000/api/members", {
+      const res = await fetch("http://localhost:8080/api/members", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -58,15 +100,10 @@ const ExistingFamilymem = () => {
 
       if (!res.ok) {
         const errData = await res.json();
-        console.error("Backend error:", errData);
         throw new Error(errData.error || "Failed to add member");
       }
 
-      const data = await res.json();
       alert("✅ Member added successfully!");
-      console.log("Saved Member:", data);
-
-      // reset form
       setFormData({
         firstname: "",
         lastname: "",
@@ -79,12 +116,11 @@ const ExistingFamilymem = () => {
         email: "",
         blog_group: "",
         aadhaar: "",
-        family_number: "",
+        family_number: formData.family_number, // keep same family
         hof: "No",
         baptismStatus: "No",
       });
     } catch (err) {
-      console.error(err);
       alert(`❌ Error adding member: ${err.message}`);
     }
   };
@@ -92,6 +128,32 @@ const ExistingFamilymem = () => {
   return (
     <div className="container">
       <form className="register-form" onSubmit={handleSubmit}>
+        {/* Family Number (First Field) */}
+        <div className="input-group">
+          <input
+            type="text"
+            name="family_number"
+            value={formData.family_number}
+            onChange={handleChange}
+            required
+          />
+          <label>Family Number</label>
+        </div>
+
+        {/* Autofilled Family Name & HOF */}
+        <div className="name-row">
+          <div className="input-group">
+            <input type="text" value={familyInfo.name} readOnly />
+            <label>Family Name</label>
+          </div>
+          <div className="input-group">
+            <input type="text" value={familyInfo.hof} readOnly />
+            <label>Head of Family</label>
+          </div>
+        </div>
+
+        {/* --- Keep all your original fields below --- */}
+
         {/* Name */}
         <div className="name-row">
           <div className="input-group">
@@ -209,26 +271,15 @@ const ExistingFamilymem = () => {
           </div>
         </div>
 
-        {/* Aadhaar & Family Number */}
-        <div className="name-row">
-          <div className="input-group">
-            <input
-              type="text"
-              name="aadhaar"
-              value={formData.aadhaar}
-              onChange={handleChange}
-            />
-            <label>Aadhaar</label>
-          </div>
-          <div className="input-group">
-            <input
-              type="text"
-              name="family_number"
-              value={formData.family_number}
-              onChange={handleChange}
-            />
-            <label>Family Number</label>
-          </div>
+        {/* Aadhaar */}
+        <div className="input-group">
+          <input
+            type="text"
+            name="aadhaar"
+            value={formData.aadhaar}
+            onChange={handleChange}
+          />
+          <label>Aadhaar</label>
         </div>
 
         {/* Hof & Baptism */}

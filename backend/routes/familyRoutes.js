@@ -29,6 +29,18 @@ router.get("/", async (req, res) => {
   }
 });
 
+// Get family by family_number
+router.get("/number/:family_number", async (req, res) => {
+  try {
+    const family = await Family.findOne({ family_number: req.params.family_number }).lean();
+    if (!family) return res.status(404).json({ error: "Family not found" });
+    res.json(family);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+
 // Get single family
 router.get("/:id", async (req, res) => {
   try {

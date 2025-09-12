@@ -21,6 +21,10 @@ import SearchedFam from './pages/family/SearchedFam';
 import Baptism from './pages/baptism';
 import DeathRecords from './pages/DeathRecords'; // 🔺 Add this
 import Subscription from './pages/Subscription';
+import SearchBap from "./pages/baptism/SearchBap"; 
+import NewBaptism from "./pages/baptism/NewBaptism"; 
+import AddDeathRecord from './pages/death/AddDeathRecord'; // 🔺 Add this
+import ViewDeathRecords from './pages/death/ViewDeathRecords'; // 🔺 Add this
 
 
 function App() {
@@ -46,6 +50,10 @@ function App() {
           <Route path="/baptism" element={<Baptism />} />
           <Route path="/death-records" element={<DeathRecords />} />
           <Route path="/subscription" element={<Subscription />} />
+          <Route path="/SearchBap" element={<SearchBap />} />
+          <Route path="/NewBaptism" element={<NewBaptism />} />
+          <Route path="/AddDeathRecord" element={<AddDeathRecord />} />
+          <Route path="/ViewDeathRecords" element={<ViewDeathRecords />} />
           <Route path="/SearchedFam" element={<SearchedFam />} />
         </Routes>
       </div>

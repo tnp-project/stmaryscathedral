@@ -1,11 +1,14 @@
 import mongoose from "mongoose";
 
-const baptismSchema = new mongoose.Schema({
-  baptism_id: { type: String, required: true, unique: true },
-  name: { type: String, required: true },
-  dob: { type: Date },
-  baptism_name: { type: String },
-  officiant: { type: String }
-}, { timestamps: true });
+const baptismSchema = new mongoose.Schema(
+  {
+    memberName: { type: String, required: true },
+    familyNumber: { type: String, required: true },
+    baptismDate: { type: Date, required: true },
+    priest: { type: String },
+    notes: { type: String },
+  },
+  { timestamps: true }
+);
 
 export default mongoose.model("Baptism", baptismSchema);

@@ -14,7 +14,8 @@ const memberSchema = new mongoose.Schema({
   aadhaar: { type: String },
   family_number: { type: String, required: true },
   hof: { type: Boolean, default: false },
-  baptism: { type: Boolean, default: false }
+  baptism: { type: Boolean, default: false },
+  deceased: { type: Boolean, default: false }
 }, { timestamps: true });
 
 export default mongoose.model("Member", memberSchema);

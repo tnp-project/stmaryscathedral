@@ -14,10 +14,20 @@ router.post("/", async (req, res) => {
   }
 });
 
-// Get all members
+// Get all members or members by family_number
 router.get("/", async (req, res) => {
   try {
-    const members = await Member.find();
+    const { family_number } = req.query;
+
+    let members;
+    if (family_number) {
+      // Only fetch members with this family_number
+      members = await Member.find({ family_number }).lean();
+    } else {
+      // Fetch all members if no family_number provided
+      members = await Member.find().lean();
+    }
+
     res.json(members);
   } catch (err) {
     res.status(500).json({ error: err.message });

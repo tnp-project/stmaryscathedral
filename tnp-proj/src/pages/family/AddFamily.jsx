@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import { useNavigate } from "react-router-dom"; // 🔹 import navigate
 
 const AddFamily = () => {
   const [form, setForm] = useState({
@@ -15,6 +16,8 @@ const AddFamily = () => {
     unit_number: ""
   });
 
+  const navigate = useNavigate(); // 🔹 create navigate hook
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setForm({ ...form, [name]: value });
@@ -23,20 +26,12 @@ const AddFamily = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await axios.post("http://localhost:5000/api/families", form); // backend API
+      await axios.post("http://localhost:8080/api/families", form); // backend API
       alert("✅ Family added successfully!");
-      setForm({
-        family_number: "",
-        name: "",
-        hof: "",
-        count: "",
-        location: "",
-        village: "",
-        contact_number: "",
-        family_unit: "",
-        ward_number: "",
-        unit_number: ""
-      });
+
+      navigate("/ExistingFamilymem", { state: { family_number: form.family_number } });
+
+
     } catch (err) {
       alert("❌ Error: " + (err.response?.data?.error || err.message));
     }
