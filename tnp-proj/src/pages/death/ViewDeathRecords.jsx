@@ -34,23 +34,39 @@ const ViewDeathRecords = () => {
           <table className="death-table">
             <thead>
               <tr>
-                <th>Member Name</th>
-                <th>Family Number</th>
-                <th>Date of Death</th>
-                <th>Reason</th>
-                <th>Place of Death</th>
-                <th>Notes</th>
+                <th>Sl No</th>
+                <th>Family No</th>
+                <th>Name</th>
+                <th>House Name</th>
+                <th>Address/Place</th>
+                <th>Father/Husband Name</th>
+                <th>Mother/Wife Name</th>
+                <th>Death Date</th>
+                <th>Burial Date</th>
+                <th>Age</th>
+                <th>Conducted by</th>
+                <th>Cause of Death</th>
+                <th>Cell No</th>
+                <th>Remarks</th>
               </tr>
             </thead>
             <tbody>
               {records.map((rec) => (
                 <tr key={rec._id}>
-                  <td>{rec.memberName}</td>
-                  <td>{rec.familyNumber}</td>
-                  <td>{new Date(rec.dod).toLocaleDateString()}</td>
-                  <td>{rec.reason || "-"}</td>
-                  <td>{rec.place_of_death || "-"}</td>
-                  <td>{rec.notes || "-"}</td>
+                  <td>{rec.sl_no}</td>
+                  <td>{rec.family_no}</td>
+                  <td>{rec.name}</td>
+                  <td>{rec.house_name || "-"}</td>
+                  <td>{rec.address_place || "-"}</td>
+                  <td>{rec.father_husband_name || "-"}</td>
+                  <td>{rec.mother_wife_name || "-"}</td>
+                  <td>{rec.death_date ? new Date(rec.death_date).toLocaleDateString() : "-"}</td>
+                  <td>{rec.burial_date ? new Date(rec.burial_date).toLocaleDateString() : "-"}</td>
+                  <td>{rec.age || "-"}</td>
+                  <td>{rec.conducted_by || "-"}</td>
+                  <td>{rec.cause_of_death || "-"}</td>
+                  <td>{rec.cell_no || "-"}</td>
+                  <td>{rec.remarks || "-"}</td>
                 </tr>
               ))}
             </tbody>

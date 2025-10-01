@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import "../../css/viewmembers.css";
 
 const SearchedFam = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   const { family_number } = location.state || {}; // get family_number from SearchFamily
   const [members, setMembers] = useState([]);
   const [error, setError] = useState(null);
@@ -19,6 +20,11 @@ const SearchedFam = () => {
         setError("Could not load members");
       });
   }, [family_number]);
+
+  const handleAddMember = () => {
+    // navigate to ExistingFamilymem.jsx and pass family_number
+    navigate("/ExistingFamilymem", { state: { family_number } });
+  };
 
   return (
     <div className="member-table-container1">
@@ -57,7 +63,7 @@ const SearchedFam = () => {
                   <td>{member.occupation || ""}</td>
                   <td>{member.phone || ""}</td>
                   <td>{member.email || ""}</td>
-                  <td>{member.blog_group || ""}</td>
+                  <td>{member.blood_group || ""}</td>
                   <td>{member.aadhaar || ""}</td>
                   <td>{member.hof ? "Yes" : "No"}</td>
                   <td>{member.baptism ? "Yes" : "No"}</td>
@@ -71,6 +77,18 @@ const SearchedFam = () => {
           </tbody>
         </table>
       </div>
+
+      {/* 🔹 Add button under table */}
+      {family_number && (
+        <div style={{ marginTop: "20px", textAlign: "center" }}>
+          <button
+            onClick={handleAddMember}
+            className="submit-btn"
+          >
+            ➕ Add New Member
+          </button>
+        </div>
+      )}
     </div>
   );
 };

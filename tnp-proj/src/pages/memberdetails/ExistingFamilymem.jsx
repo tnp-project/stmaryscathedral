@@ -267,7 +267,7 @@ const ExistingFamilymem = () => {
               value={formData.blog_group}
               onChange={handleChange}
             />
-            <label>Blood Group / Blog Group</label>
+            <label>Blood Group </label>
           </div>
         </div>
 

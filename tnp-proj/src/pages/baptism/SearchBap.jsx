@@ -12,8 +12,19 @@ const SearchBap = () => {
       .catch((err) => console.error("Error fetching baptisms:", err));
   }, []);
 
+  // filter by child name, father, mother
   const filteredBaptisms = baptisms.filter((b) =>
-    (b.memberName || "").toLowerCase().includes(search.toLowerCase())
+    [
+      b.baptName,
+      b.officialName,
+      b.father,
+      b.mother,
+      b.regNo,
+      b.familyNo,
+    ]
+      .join(" ")
+      .toLowerCase()
+      .includes(search.toLowerCase())
   );
 
   return (
@@ -35,11 +46,20 @@ const SearchBap = () => {
           <thead>
             <tr>
               <th>Sl No</th>
-              <th>Member Name</th>
-              <th>Family Number</th>
-              <th>Baptism Date</th>
-              <th>Priest</th>
-              <th>Notes</th>
+              <th>Reg. No / Family No</th>
+              <th>Church of Child</th>
+              <th>Date of Birth</th>
+              <th>Date of Baptism</th>
+              <th>Place</th>
+              <th>House Name</th>
+              <th>Father</th>
+              <th>Mother</th>
+              <th>Male/Female</th>
+              <th>Bapt. Name</th>
+              <th>Official Name</th>
+              <th>Godparent Name</th>
+              <th>Godparent House</th>
+              <th>Church Where Baptised</th>
             </tr>
           </thead>
           <tbody>
@@ -47,16 +67,31 @@ const SearchBap = () => {
               filteredBaptisms.map((bap, idx) => (
                 <tr key={bap._id || idx}>
                   <td>{idx + 1}</td>
-                  <td>{bap.memberName}</td>
-                  <td>{bap.familyNumber}</td>
-                  <td>{bap.baptismDate ? new Date(bap.baptismDate).toLocaleDateString() : ""}</td>
-                  <td>{bap.priest || ""}</td>
-                  <td>{bap.notes || ""}</td>
+                  <td>{bap.regNo || bap.familyNo || ""}</td>
+                  <td>{bap.churchOfChild || ""}</td>
+                  <td>
+                    {bap.dob ? new Date(bap.dob).toLocaleDateString() : ""}
+                  </td>
+                  <td>
+                    {bap.dateOfBaptism
+                      ? new Date(bap.dateOfBaptism).toLocaleDateString()
+                      : ""}
+                  </td>
+                  <td>{bap.place || ""}</td>
+                  <td>{bap.houseName || ""}</td>
+                  <td>{bap.father || ""}</td>
+                  <td>{bap.mother || ""}</td>
+                  <td>{bap.gender || ""}</td>
+                  <td>{bap.baptName || ""}</td>
+                  <td>{bap.officialName || ""}</td>
+                  <td>{bap.godparentName || ""}</td>
+                  <td>{bap.godparentHouseName || ""}</td>
+                  <td>{bap.churchWhereBaptised || ""}</td>
                 </tr>
               ))
             ) : (
               <tr>
-                <td colSpan="6">No baptism records found</td>
+                <td colSpan="15">No baptism records found</td>
               </tr>
             )}
           </tbody>

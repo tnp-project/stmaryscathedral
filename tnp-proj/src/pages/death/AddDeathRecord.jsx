@@ -1,66 +1,126 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "../../css/deathadd.css";
 
 const AddDeathRecord = () => {
-  const [familyNumber, setFamilyNumber] = useState("");
+  const [families, setFamilies] = useState([]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filteredFamilies, setFilteredFamilies] = useState([]);
+  const [selectedFamily, setSelectedFamily] = useState(null);
+  const [selectedHof, setSelectedHof] = useState("");
   const [members, setMembers] = useState([]);
   const [selectedMember, setSelectedMember] = useState("");
+  const [isHof, setIsHof] = useState(false);
+  const [nextHof, setNextHof] = useState("");
+
   const [formData, setFormData] = useState({
-    dod: "",
-    reason: "",
-    place_of_death: "",
-    notes: "",
+    sl_no: "",
+    name: "",
+    house_name: "",
+    address_place: "",
+    father_husband_name: "",
+    mother_wife_name: "",
+    death_date: "",
+    burial_date: "",
+    age: "",
+    church: "",
+    cause_of_death: "",
+    cell_no: "",
+    remarks: "",
   });
 
-  // Fetch members by family number
-  const fetchMembers = async () => {
-    if (!familyNumber) {
-      alert("⚠️ Please enter a family number.");
-      return;
-    }
-    try {
-      const res = await fetch(
-        `http://localhost:8080/api/members?family_number=${familyNumber}`
+  // Fetch families on mount
+  useEffect(() => {
+    fetch("http://localhost:8080/api/families")
+      .then((res) => res.json())
+      .then((data) => setFamilies(data))
+      .catch((err) => console.error("Error fetching families:", err));
+  }, []);
+
+  // Filter families by name
+  useEffect(() => {
+    if (searchQuery.trim() === "") {
+      setFilteredFamilies([]);
+    } else {
+      setFilteredFamilies(
+        families.filter((fam) =>
+          fam.name.toLowerCase().includes(searchQuery.toLowerCase())
+        )
       );
-      const data = await res.json();
-
-      if (data.length === 0) {
-        alert("❌ No members found for this family number.");
-      }
-
-      setMembers(data);
-    } catch (err) {
-      console.error("Error fetching members:", err);
-      alert("❌ Could not fetch members for this family number.");
     }
-  };
+  }, [searchQuery, families]);
 
-  // Handle input change
+  // Fetch members when family selected
+  useEffect(() => {
+    if (selectedHof) {
+      fetch(`http://localhost:8080/api/members?family_number=${selectedFamily.family_number}`)
+        .then((res) => res.json())
+        .then((data) => setMembers(data))
+        .catch((err) => console.error("Error fetching members:", err));
+    }
+  }, [selectedHof, selectedFamily]);
+
+  // Autofill when member selected
+  useEffect(() => {
+    if (selectedMember) {
+      const memberObj = members.find((m) => m._id === selectedMember);
+      if (memberObj) {
+        setFormData((prev) => ({
+          ...prev,
+          name: memberObj.name || "",
+          house_name: memberObj.house_name || "",
+          address_place: memberObj.address || "",
+          father_husband_name:
+            memberObj.father_name || memberObj.husband_name || "",
+          mother_wife_name: memberObj.mother_name || memberObj.wife_name || "",
+          age: memberObj.age || "",
+          cell_no: memberObj.phone || "",
+        }));
+
+        if (memberObj.hof) {
+          setIsHof(true);
+        } else {
+          setIsHof(false);
+          setNextHof("");
+        }
+      }
+    }
+  }, [selectedMember, members]);
+
+  // Handle form input
   const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
+    setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  // Submit death record
+  // Submit form
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!selectedMember) {
-      alert("Please select a member.");
+
+    if (!selectedFamily || !selectedHof || !selectedMember) {
+      alert("⚠️ Please complete family, HOF, and member selection.");
+      return;
+    }
+    if (isHof && !nextHof) {
+      alert("⚠️ Please select the next HOF.");
       return;
     }
 
-    const memberObj = members.find((m) => m._id === selectedMember);
-
     const payload = {
-      memberId: memberObj._id,
-      memberName: memberObj.name,
-      familyNumber: familyNumber,
-      dod: formData.dod,
-      reason: formData.reason,
-      place_of_death: formData.place_of_death,
-      notes: formData.notes,
+      sl_no: formData.sl_no,
+      family_no: selectedFamily.family_number,
+      name: formData.name,
+      house_name: formData.house_name,
+      address_place: formData.address_place,
+      father_husband_name: formData.father_husband_name,
+      mother_wife_name: formData.mother_wife_name,
+      death_date: formData.death_date,
+      burial_date: formData.burial_date,
+      age: formData.age,
+      church: formData.church,
+      cause_of_death: formData.cause_of_death,
+      cell_no: formData.cell_no,
+      remarks: formData.remarks,
+      deceasedId: selectedMember,
+      nextHof: isHof ? nextHof : null,
     };
 
     try {
@@ -70,19 +130,31 @@ const AddDeathRecord = () => {
         body: JSON.stringify(payload),
       });
 
-      if (!res.ok) {
-        throw new Error("Failed to add death record");
-      }
+      if (!res.ok) throw new Error("Failed to add death record");
 
       alert("✅ Death record added successfully!");
-      setFamilyNumber("");
+      setSearchQuery("");
+      setFilteredFamilies([]);
+      setSelectedFamily(null);
+      setSelectedHof("");
       setMembers([]);
       setSelectedMember("");
+      setIsHof(false);
+      setNextHof("");
       setFormData({
-        dod: "",
-        reason: "",
-        place_of_death: "",
-        notes: "",
+        sl_no: "",
+        name: "",
+        house_name: "",
+        address_place: "",
+        father_husband_name: "",
+        mother_wife_name: "",
+        death_date: "",
+        burial_date: "",
+        age: "",
+        church: "",
+        cause_of_death: "",
+        cell_no: "",
+        remarks: "",
       });
     } catch (err) {
       console.error(err);
@@ -95,85 +167,223 @@ const AddDeathRecord = () => {
       <form className="register-form" onSubmit={handleSubmit}>
         <h2>Add Death Record</h2>
 
-        {/* Family Number with Fetch button */}
-        <div className="input-group">
-          <label>Family Number</label>
-          <input
-            type="text"
-            name="familyNumber"
-            value={familyNumber}
-            onChange={(e) => setFamilyNumber(e.target.value)}
-          />
-          <button
-            type="button"
-            className="fetch-btn"
-            onClick={fetchMembers}
-          >
-            Fetch Member
-          </button>
-        </div>
+{/* Search Family */}
+<div className="input-group">
+  <label>Search Family</label>
+  <input
+    type="text"
+    value={searchQuery}
+    onChange={(e) => setSearchQuery(e.target.value)}
+    placeholder="Type family name..."
+  />
+  {filteredFamilies.length > 0 && (
+    <ul className="suggestions">
+      {filteredFamilies.map((fam) => (
+        <li
+          key={fam._id}
+          onClick={() => {
+            setSelectedFamily(fam);
+            setSearchQuery(fam.name);
+            setFilteredFamilies([]);
+            // ✅ If there’s only one matching family → auto-select its HOF
+            const sameNameFamilies = families.filter((f) => f.name === fam.name);
+            if (sameNameFamilies.length === 1) {
+              setSelectedHof(fam.hof);
+            } else {
+              setSelectedHof(""); // force manual selection if multiple HOFs
+            }
+          }}
+        >
+          {fam.name}
+        </li>
+      ))}
+    </ul>
+  )}
+</div>
 
-        {/* Member Selection */}
-        {members.length > 0 && (
+{/* HOF dropdown if multiple families with same name */}
+{selectedFamily &&
+  families.filter((f) => f.name === selectedFamily.name).length > 1 && (
+    <div className="input-group">
+      <label>Select HOF</label>
+      <select
+        value={selectedHof}
+        onChange={(e) => setSelectedHof(e.target.value)}
+        required
+      >
+        <option value="">Select HOF</option>
+        {families
+          .filter((f) => f.name === selectedFamily.name)
+          .map((f) => (
+            <option key={f._id} value={f.hof}>
+              {f.hof}
+            </option>
+          ))}
+      </select>
+    </div>
+  )}
+
+{/* ✅ Member dropdown always appears once HOF is chosen */}
+{selectedHof && members.length > 0 && (
+  <div className="input-group">
+    <label>Select Member (Deceased)</label>
+    <select
+      value={selectedMember}
+      onChange={(e) => setSelectedMember(e.target.value)}
+      required
+    >
+      <option value="">Select Member</option>
+      {members.map((m) => (
+        <option key={m._id} value={m._id}>
+          {m.name}
+        </option>
+      ))}
+    </select>
+  </div>
+)}
+
+
+        {/* Next HOF if deceased was HOF */}
+        {isHof && (
           <div className="input-group">
+            <label>Select Next HOF</label>
             <select
-              value={selectedMember}
-              onChange={(e) => setSelectedMember(e.target.value)}
+              value={nextHof}
+              onChange={(e) => setNextHof(e.target.value)}
               required
             >
-              <option value="">Select Member</option>
-              {members.map((m) => (
-                <option key={m._id} value={m._id}>
-                  {m.name}
-                </option>
-              ))}
+              <option value="">Select Next HOF</option>
+              {members
+                .filter((m) => m._id !== selectedMember)
+                .map((m) => (
+                  <option key={m._id} value={m._id}>
+                    {m.name}
+                  </option>
+                ))}
             </select>
-            <label>Member</label>
           </div>
         )}
 
-        {/* Date of Death */}
+        {/* Rest of form inputs */}
         <div className="input-group">
           <input
-            type="date"
-            name="dod"
-            value={formData.dod}
+            type="text"
+            name="sl_no"
+            value={formData.sl_no}
             onChange={handleChange}
             required
           />
-          <label>Date of Death</label>
+          <label>Sl No</label>
         </div>
 
-        {/* Reason */}
         <div className="input-group">
           <input
             type="text"
-            name="reason"
-            value={formData.reason}
+            name="house_name"
+            value={formData.house_name}
             onChange={handleChange}
           />
-          <label>Reason</label>
+          <label>House Name</label>
         </div>
 
-        {/* Place of Death */}
         <div className="input-group">
           <input
             type="text"
-            name="place_of_death"
-            value={formData.place_of_death}
+            name="address_place"
+            value={formData.address_place}
             onChange={handleChange}
           />
-          <label>Place of Death</label>
+          <label>Address/Place</label>
         </div>
 
-        {/* Notes */}
+        <div className="input-group">
+          <input
+            type="text"
+            name="father_husband_name"
+            value={formData.father_husband_name}
+            onChange={handleChange}
+          />
+          <label>Father/Husband Name</label>
+        </div>
+
+        <div className="input-group">
+          <input
+            type="text"
+            name="mother_wife_name"
+            value={formData.mother_wife_name}
+            onChange={handleChange}
+          />
+          <label>Mother/Wife Name</label>
+        </div>
+
+        <div className="input-group">
+          <input
+            type="date"
+            name="death_date"
+            value={formData.death_date}
+            onChange={handleChange}
+            required
+          />
+          <label>Death Date</label>
+        </div>
+
+        <div className="input-group">
+          <input
+            type="date"
+            name="burial_date"
+            value={formData.burial_date}
+            onChange={handleChange}
+          />
+          <label>Burial Date</label>
+        </div>
+
+        <div className="input-group">
+          <input
+            type="number"
+            name="age"
+            value={formData.age}
+            onChange={handleChange}
+          />
+          <label>Age</label>
+        </div>
+
+        <div className="input-group">
+          <input
+            type="text"
+            name="church"
+            value={formData.church}
+            onChange={handleChange}
+          />
+          <label>Conducted by</label>
+        </div>
+
+        <div className="input-group">
+          <input
+            type="text"
+            name="cause_of_death"
+            value={formData.cause_of_death}
+            onChange={handleChange}
+          />
+          <label>Cause of Death</label>
+        </div>
+
+        <div className="input-group">
+          <input
+            type="text"
+            name="cell_no"
+            value={formData.cell_no}
+            onChange={handleChange}
+          />
+          <label>Cell No.</label>
+        </div>
+
         <div className="input-group">
           <textarea
-            name="notes"
-            value={formData.notes}
+            name="remarks"
+            value={formData.remarks}
             onChange={handleChange}
           ></textarea>
-          <label>Notes</label>
+          <label>Remarks</label>
         </div>
 
         <button type="submit" className="submit-btn">

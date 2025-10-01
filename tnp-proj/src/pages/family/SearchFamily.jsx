@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 
 const SearchFamily = () => {
   const [families, setFamilies] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -13,14 +14,21 @@ const SearchFamily = () => {
       .catch((err) => console.error("Error fetching families:", err));
   }, []);
 
+  // 🔎 Filter families by name
+  const filteredFamilies = families.filter((fam) =>
+    fam.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   return (
     <>
       <div className="container-input4">
         <input
           type="text"
-          placeholder="SEARCH FAMILY"
+          placeholder="SEARCH FAMILY BY NAME"
           name="text"
           className="input"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
         />
         <svg
           fill="#000000"
@@ -40,21 +48,30 @@ const SearchFamily = () => {
             <thead>
               <tr>
                 <th>FAMILY NO</th>
-                <th>FAMILY Name</th>
+                <th>FAMILY NAME</th>
                 <th>HoF</th>
               </tr>
             </thead>
             <tbody>
-              {families.map((fam) => (
-                <tr
-                  key={fam._id}
-                  onClick={() => navigate("/SearchedFam", { state: fam })}
-                >
-                  <td>{fam.family_number}</td>
-                  <td>{fam.name}</td>
-                  <td>{fam.hof}</td>
+              {filteredFamilies.length > 0 ? (
+                filteredFamilies.map((fam) => (
+                  <tr
+                    key={fam._id}
+                    onClick={() => navigate("/SearchedFam", { state: fam })}
+                    style={{ cursor: "pointer" }}
+                  >
+                    <td>{fam.family_number}</td>
+                    <td>{fam.name}</td>
+                    <td>{fam.hof}</td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan="3" style={{ textAlign: "center", color: "gray" }}>
+                    No families found
+                  </td>
                 </tr>
-              ))}
+              )}
             </tbody>
           </table>
         </div>

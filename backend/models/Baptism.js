@@ -1,14 +1,59 @@
 import mongoose from "mongoose";
 
-const baptismSchema = new mongoose.Schema(
-  {
-    memberName: { type: String, required: true },
-    familyNumber: { type: String, required: true },
-    baptismDate: { type: Date, required: true },
-    priest: { type: String },
-    notes: { type: String },
+const BaptismSchema = new mongoose.Schema({
+  sl_no: {
+    type: Number,
+    required: true,
+    unique: true,
   },
-  { timestamps: true }
-);
+  reg_no_family_no: {
+    type: String,
+    required: true,
+  },
+  church_of_child: {
+    type: String,
+  },
+  dob: {
+    type: Date,
+    required: true,
+  },
+  date_of_baptism: {
+    type: Date,
+    required: true,
+  },
+  place: {
+    type: String,
+  },
+  house_name: {
+    type: String,
+  },
+  father: {
+    type: String,
+  },
+  mother: {
+    type: String,
+  },
+  gender: {
+    type: String,
+    enum: ["Male", "Female"],
+    required: true,
+  },
+  bapt_name: {
+    type: String,
+    required: true,
+  },
+  official_name: {
+    type: String,
+  },
+  godparent_name: {
+    type: String,
+  },
+  godparent_house_name: {
+    type: String,
+  },
+  church_where_baptised: {
+    type: String,
+  },
+}, { timestamps: true });
 
-export default mongoose.model("Baptism", baptismSchema);
+export default mongoose.model("BaptismRecord", BaptismSchema);

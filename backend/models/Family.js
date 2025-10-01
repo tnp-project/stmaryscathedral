@@ -11,7 +11,7 @@ const familySchema = new mongoose.Schema({
   family_unit: { type: String },
   ward_number: { type: String },   // ✅ added
   unit_number: { type: String },   // ✅ added
-  subscription: { type: Boolean, default: false }
+  subscription: { type: Number, default: 0 }
 }, { timestamps: true });
 
 export default mongoose.model("Family", familySchema);

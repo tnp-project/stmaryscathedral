@@ -23,23 +23,37 @@ const AddFamily = () => {
     setForm({ ...form, [name]: value });
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      await axios.post("http://localhost:8080/api/families", form); // backend API
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  try {
+    const res = await axios.post("http://localhost:8080/api/families", form);
+
+    if (res.status === 201 || res.status === 200) {
       alert("✅ Family added successfully!");
-
       navigate("/ExistingFamilymem", { state: { family_number: form.family_number } });
-
-
-    } catch (err) {
-      alert("❌ Error: " + (err.response?.data?.error || err.message));
+    } else {
+      alert("⚠️ Family could not be added. Please try again.");
     }
-  };
+  } catch (err) {
+    console.error("Error adding family:", err.response?.data || err.message);
+    alert("❌ Error: " + (err.response?.data?.error || err.message));
+  }
+};
+
 
   return (
+    
     <div className="container">
       <form className="register-form" onSubmit={handleSubmit}>
+        <div className="input-group">
+          <input type="text" name="ward_number" value={form.ward_number} onChange={handleChange} />
+          <label>Block Number</label>
+        </div>
+
+        <div className="input-group">
+          <input type="text" name="unit_number" value={form.unit_number} onChange={handleChange} />
+          <label>Unit Number</label>
+        </div>
         <div className="input-group">
           <input type="text" name="family_number" value={form.family_number} onChange={handleChange} required />
           <label>Family Number</label>
@@ -80,15 +94,7 @@ const AddFamily = () => {
           <label>Kudumb Unit Name</label>
         </div>
 
-        <div className="input-group">
-          <input type="text" name="ward_number" value={form.ward_number} onChange={handleChange} />
-          <label>Ward Number</label>
-        </div>
 
-        <div className="input-group">
-          <input type="text" name="unit_number" value={form.unit_number} onChange={handleChange} />
-          <label>Unit Number</label>
-        </div>
 
         <button type="submit" className="submit-btn">Submit</button>
       </form>

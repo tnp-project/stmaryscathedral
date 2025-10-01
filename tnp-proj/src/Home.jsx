@@ -7,8 +7,8 @@ const Home = () => {
   const navigate = useNavigate();
 
   const items = [
-    { label: 'Member Details', icon: <FaUsers />, path: '/MemberDetails' },
     { label: 'Family Details', icon: <FaHome />, path: '/FamilyDetails' },
+    { label: 'Member Details', icon: <FaUsers />, path: '/MemberDetails' },
     { label: 'Baptism', icon: <FaHeart />, path: '/Baptism' },
     { label: 'Death Records', icon: <FaBook />, path: '/death-records' },
     { label: 'Marriage', icon: <FaRing />, path: '/Marriage' },

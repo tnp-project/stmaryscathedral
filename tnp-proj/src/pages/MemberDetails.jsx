@@ -17,6 +17,11 @@ const MemberDetails = () => {
           <p className="text-title">VIEW MEMBERS</p>
         </div>
       </div>
+      <div className="card" onClick={() => navigate("/EditMember")}>
+        <div className="card-details">
+          <p className="text-title">EDIT MEMBERS</p>
+        </div>
+      </div>
     </div>
   );
 };

@@ -25,7 +25,7 @@ import SearchBap from "./pages/baptism/SearchBap";
 import NewBaptism from "./pages/baptism/NewBaptism"; 
 import AddDeathRecord from './pages/death/AddDeathRecord'; // 🔺 Add this
 import ViewDeathRecords from './pages/death/ViewDeathRecords'; // 🔺 Add this
-
+import EditMember from './pages/memberdetails/EditMember';
 
 function App() {
   return (
@@ -42,6 +42,7 @@ function App() {
           <Route path="/AddMember" element={<AddMember />} />
           <Route path="/ExistingFamilymem" element={<ExistingFamilymem />} />
           <Route path="/ViewMembers" element={<ViewMembers />} />
+          <Route path="/EditMember" element={<EditMember />} />
           <Route path="/Marriage" element={<Marriage />} />
           <Route path="/AddMarriage" element={<AddMarriage />} />
           <Route path="/SearchMarriage" element={<SearchMarriage />} />
