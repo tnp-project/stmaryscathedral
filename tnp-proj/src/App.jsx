@@ -14,7 +14,7 @@ import ExistingFamilymem from './pages/memberdetails/ExistingFamilymem';
 import ViewMembers from './pages/memberdetails/ViewMembers';
 import Marriage from './pages/Marriage';
 import AddMarriage from './pages/marriage/AddMarriage';
-import SearchMarriage from './pages/marriage/SearchMarriage';
+import ViewMarriage from './pages/marriage/ViewMarriage';
 import SignIn from './pages/SignIn';
 import SearchFamily from './pages/family/SearchFamily';
 import SearchedFam from './pages/family/SearchedFam';
@@ -45,7 +45,7 @@ function App() {
           <Route path="/EditMember" element={<EditMember />} />
           <Route path="/Marriage" element={<Marriage />} />
           <Route path="/AddMarriage" element={<AddMarriage />} />
-          <Route path="/SearchMarriage" element={<SearchMarriage />} />
+          <Route path="/ViewMarriage" element={<ViewMarriage />} />
           <Route path="/SignIn" element={<SignIn />} />
           <Route path="/SearchFamily" element={<SearchFamily />} />
           <Route path="/baptism" element={<Baptism />} />

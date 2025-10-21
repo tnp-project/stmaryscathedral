@@ -7,53 +7,105 @@ const router = express.Router();
 // ➕ Add Death Record
 router.post("/", async (req, res) => {
   try {
-    const { memberId, familyNumber, ...deathData } = req.body;
+    // Separate memberId and nextHofId from the death record data
+    const { memberId, nextHofId, ...deathData } = req.body;
+    
+    // Get the family number from the death data
+    const familyNumber = deathData.family_no;
 
-    // 1. Save the death record
-    const newDeath = new Death({
-      memberId,
-      familyNumber,
-      ...deathData,
-    });
+    if (!memberId || !familyNumber) {
+      return res.status(400).json({
+        error: "Missing required fields: memberId and family_no are required."
+      });
+    }
+
+    // Find the member *before* updating to check their HoF status
+    const memberToDecease = await Member.findById(memberId);
+    if (!memberToDecease) {
+      return res.status(404).json({ error: "Member not found" });
+    }
+
+    const wasHof = memberToDecease.hof; // Store their original HoF status
+
+    // Save the death record
+    const newDeath = new Death(deathData);
     await newDeath.save();
 
-    // 2. Mark the member as deceased
-    const deceasedMember = await Member.findByIdAndUpdate(
+    // Mark the member as deceased and remove HOF status
+    await Member.findByIdAndUpdate(
       memberId,
-      { hof: false, deceased: true }, // you may need to add "deceased" field in Member schema
-      { new: true }
+      { hof: false, deceased: true }
     );
 
-    // 3. If deceased was HoF → pick a new HoF
-    if (deceasedMember && deceasedMember.hof === true) {
-      const newHof = await Member.findOneAndUpdate(
-        {
-          family_number: familyNumber,
-          _id: { $ne: memberId }, // not the deceased
-          deceased: { $ne: true }, // must be alive
-        },
-        { hof: true },
-        { new: true }
-      );
-
-      if (!newHof) {
-        console.warn(`⚠️ No eligible new HoF found for family ${familyNumber}`);
+    // If deceased *was* HoF → assign new HoF
+    if (wasHof) {
+      let newHof;
+      
+      // If a specific next HOF was selected, use it
+      if (nextHofId) {
+        newHof = await Member.findByIdAndUpdate(
+          nextHofId,
+          { hof: true },
+          { new: true }
+        );
+        
+        if (!newHof) {
+          return res.status(404).json({ error: "Selected next HOF not found" });
+        }
+        
+        console.log(`✅ New HoF manually selected for family ${familyNumber}: ${newHof.name}`);
       } else {
-        console.log(`✅ New HoF for family ${familyNumber}: ${newHof.name}`);
+        // Otherwise, auto-select based on oldest non-deceased member
+        newHof = await Member.findOneAndUpdate(
+          {
+            family_number: familyNumber,
+            _id: { $ne: memberId },  
+            deceased: { $ne: true },
+          },
+          { hof: true },
+          {
+            new: true,
+            sort: { dob: 1 } // Oldest first
+          }
+        );
+        
+        if (!newHof) {
+          console.warn(`⚠️ No eligible new HoF found for family ${familyNumber}`);
+        } else {
+          console.log(`✅ New HoF auto-selected for family ${familyNumber}: ${newHof.name}`);
+        }
       }
     }
 
-    res.status(201).json({ message: "Death record added", newDeath });
+    res.status(201).json({ 
+      message: "Death record added successfully", 
+      death: newDeath 
+    });
+    
   } catch (err) {
-    console.error(err);
-    res.status(400).json({ error: err.message });
+    console.error("Error adding death record:", err);
+    
+    if (err.name === 'ValidationError') {
+      return res.status(400).json({ 
+        error: "Validation error", 
+        details: err.message 
+      });
+    }
+    
+    if (err.code === 11000) {
+      return res.status(409).json({ 
+        error: "A death record with this sl_no already exists." 
+      });
+    }
+    
+    res.status(500).json({ error: "An internal server error occurred" });
   }
 });
 
 // 📜 Get All Death Records
 router.get("/", async (req, res) => {
   try {
-    const deaths = await Death.find();
+    const deaths = await Death.find().sort({ death_date: -1 });
     res.json(deaths);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -64,7 +116,9 @@ router.get("/", async (req, res) => {
 router.get("/:id", async (req, res) => {
   try {
     const death = await Death.findById(req.params.id);
-    if (!death) return res.status(404).json({ error: "Death record not found" });
+    if (!death) {
+      return res.status(404).json({ error: "Death record not found" });
+    }
     res.json(death);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -74,7 +128,16 @@ router.get("/:id", async (req, res) => {
 // ✏️ Update Death Record
 router.put("/:id", async (req, res) => {
   try {
-    const updatedDeath = await Death.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    const updatedDeath = await Death.findByIdAndUpdate(
+      req.params.id, 
+      req.body, 
+      { new: true, runValidators: true }
+    );
+    
+    if (!updatedDeath) {
+      return res.status(404).json({ error: "Death record not found" });
+    }
+    
     res.json(updatedDeath);
   } catch (err) {
     res.status(400).json({ error: err.message });
@@ -84,8 +147,13 @@ router.put("/:id", async (req, res) => {
 // ❌ Delete Death Record
 router.delete("/:id", async (req, res) => {
   try {
-    await Death.findByIdAndDelete(req.params.id);
-    res.json({ message: "Death record deleted" });
+    const deletedRecord = await Death.findByIdAndDelete(req.params.id);
+    
+    if (!deletedRecord) {
+      return res.status(404).json({ error: "Death record not found" });
+    }
+    
+    res.json({ message: "Death record deleted successfully" });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

@@ -6,54 +6,72 @@ const BaptismSchema = new mongoose.Schema({
     required: true,
     unique: true,
   },
-  reg_no_family_no: {
+  // Family Information
+  family_number: {
+    type: String,
+    required: true,
+    ref: 'Family'
+  },
+  family_name: {
     type: String,
     required: true,
   },
-  church_of_child: {
+  hof: {
     type: String,
+    required: true,
   },
-  dob: {
+  // Member Information
+  member_id: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Member',
+    required: true
+  },
+  member_name: {
+    type: String,
+    required: true,
+  },
+  member_dob: {
     type: Date,
     required: true,
-  },
-  date_of_baptism: {
-    type: Date,
-    required: true,
-  },
-  place: {
-    type: String,
-  },
-  house_name: {
-    type: String,
-  },
-  father: {
-    type: String,
-  },
-  mother: {
-    type: String,
   },
   gender: {
     type: String,
     enum: ["Male", "Female"],
     required: true,
   },
+  // Baptism Details
+  date_of_baptism: {
+    type: Date,
+    required: true,
+  },
+  place_of_baptism: {
+    type: String,
+  },
+  church_where_baptised: {
+    type: String,
+  },
   bapt_name: {
     type: String,
     required: true,
   },
-  official_name: {
-    type: String,
-  },
+  // Godparent Information
   godparent_name: {
     type: String,
   },
   godparent_house_name: {
     type: String,
   },
-  church_where_baptised: {
+  // Certificate Details
+  certificate_number: {
     type: String,
   },
+  remarks: {
+    type: String,
+  }
 }, { timestamps: true });
+
+// IMPORTANT: If updating existing schema, drop the collection first or use:
+// db.baptismrecords.drop()
+// Then restart your server
 
 export default mongoose.model("BaptismRecord", BaptismSchema);

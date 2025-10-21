@@ -12,9 +12,9 @@ const Marriage = () => {
       <p class="text-title">ADD MARRIAGE</p>
     </div>
   </div>
-  <div class="card" on onClick={()=> navigate("/SearchMarriage")}>
+  <div class="card" on onClick={()=> navigate("/ViewMarriage")}>
     <div class="card-details">
-      <p class="text-title">SEARCH</p>
+      <p class="text-title">VIEW MARRIAGE</p>
     </div>
   </div>
  

@@ -22,7 +22,7 @@ const AddDeathRecord = () => {
     death_date: "",
     burial_date: "",
     age: "",
-    church: "",
+    conducted_by: "", // ✅ Changed from 'church' to match schema
     cause_of_death: "",
     cell_no: "",
     remarks: "",
@@ -105,7 +105,12 @@ const AddDeathRecord = () => {
     }
 
     const payload = {
-      sl_no: formData.sl_no,
+      // ✅ Changed 'deceasedId' to 'memberId' to match backend
+      memberId: selectedMember,
+      nextHofId: isHof ? nextHof : null, // ✅ Added nextHofId for manual HOF selection
+      
+      // Death record data
+      sl_no: parseInt(formData.sl_no), // ✅ Convert to number
       family_no: selectedFamily.family_number,
       name: formData.name,
       house_name: formData.house_name,
@@ -114,13 +119,11 @@ const AddDeathRecord = () => {
       mother_wife_name: formData.mother_wife_name,
       death_date: formData.death_date,
       burial_date: formData.burial_date,
-      age: formData.age,
-      church: formData.church,
+      age: formData.age ? parseInt(formData.age) : null, // ✅ Convert to number
+      conducted_by: formData.conducted_by, // ✅ Changed from 'church'
       cause_of_death: formData.cause_of_death,
       cell_no: formData.cell_no,
       remarks: formData.remarks,
-      deceasedId: selectedMember,
-      nextHof: isHof ? nextHof : null,
     };
 
     try {
@@ -130,9 +133,15 @@ const AddDeathRecord = () => {
         body: JSON.stringify(payload),
       });
 
-      if (!res.ok) throw new Error("Failed to add death record");
+      const data = await res.json(); // ✅ Get response data for better error handling
+
+      if (!res.ok) {
+        throw new Error(data.error || "Failed to add death record");
+      }
 
       alert("✅ Death record added successfully!");
+      
+      // Reset form
       setSearchQuery("");
       setFilteredFamilies([]);
       setSelectedFamily(null);
@@ -151,14 +160,14 @@ const AddDeathRecord = () => {
         death_date: "",
         burial_date: "",
         age: "",
-        church: "",
+        conducted_by: "", // ✅ Changed from 'church'
         cause_of_death: "",
         cell_no: "",
         remarks: "",
       });
     } catch (err) {
       console.error(err);
-      alert("❌ Error adding death record.");
+      alert(`❌ Error: ${err.message}`);
     }
   };
 
@@ -167,81 +176,79 @@ const AddDeathRecord = () => {
       <form className="register-form" onSubmit={handleSubmit}>
         <h2>Add Death Record</h2>
 
-{/* Search Family */}
-<div className="input-group">
-  <label>Search Family</label>
-  <input
-    type="text"
-    value={searchQuery}
-    onChange={(e) => setSearchQuery(e.target.value)}
-    placeholder="Type family name..."
-  />
-  {filteredFamilies.length > 0 && (
-    <ul className="suggestions">
-      {filteredFamilies.map((fam) => (
-        <li
-          key={fam._id}
-          onClick={() => {
-            setSelectedFamily(fam);
-            setSearchQuery(fam.name);
-            setFilteredFamilies([]);
-            // ✅ If there’s only one matching family → auto-select its HOF
-            const sameNameFamilies = families.filter((f) => f.name === fam.name);
-            if (sameNameFamilies.length === 1) {
-              setSelectedHof(fam.hof);
-            } else {
-              setSelectedHof(""); // force manual selection if multiple HOFs
-            }
-          }}
-        >
-          {fam.name}
-        </li>
-      ))}
-    </ul>
-  )}
-</div>
+        {/* Search Family */}
+        <div className="input-group">
+          <label>Search Family</label>
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Type family name..."
+          />
+          {filteredFamilies.length > 0 && (
+            <ul className="suggestions">
+              {filteredFamilies.map((fam) => (
+                <li
+                  key={fam._id}
+                  onClick={() => {
+                    setSelectedFamily(fam);
+                    setSearchQuery(fam.name);
+                    setFilteredFamilies([]);
+                    const sameNameFamilies = families.filter((f) => f.name === fam.name);
+                    if (sameNameFamilies.length === 1) {
+                      setSelectedHof(fam.hof);
+                    } else {
+                      setSelectedHof("");
+                    }
+                  }}
+                >
+                  {fam.name}
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
 
-{/* HOF dropdown if multiple families with same name */}
-{selectedFamily &&
-  families.filter((f) => f.name === selectedFamily.name).length > 1 && (
-    <div className="input-group">
-      <label>Select HOF</label>
-      <select
-        value={selectedHof}
-        onChange={(e) => setSelectedHof(e.target.value)}
-        required
-      >
-        <option value="">Select HOF</option>
-        {families
-          .filter((f) => f.name === selectedFamily.name)
-          .map((f) => (
-            <option key={f._id} value={f.hof}>
-              {f.hof}
-            </option>
-          ))}
-      </select>
-    </div>
-  )}
+        {/* HOF dropdown if multiple families with same name */}
+        {selectedFamily &&
+          families.filter((f) => f.name === selectedFamily.name).length > 1 && (
+            <div className="input-group">
+              <label>Select HOF</label>
+              <select
+                value={selectedHof}
+                onChange={(e) => setSelectedHof(e.target.value)}
+                required
+              >
+                <option value="">Select HOF</option>
+                {families
+                  .filter((f) => f.name === selectedFamily.name)
+                  .map((f) => (
+                    <option key={f._id} value={f.hof}>
+                      {f.hof}
+                    </option>
+                  ))}
+              </select>
+            </div>
+          )}
 
-{/* ✅ Member dropdown always appears once HOF is chosen */}
-{selectedHof && members.length > 0 && (
-  <div className="input-group">
-    <label>Select Member (Deceased)</label>
-    <select
-      value={selectedMember}
-      onChange={(e) => setSelectedMember(e.target.value)}
-      required
-    >
-      <option value="">Select Member</option>
-      {members.map((m) => (
-        <option key={m._id} value={m._id}>
-          {m.name}
-        </option>
-      ))}
-    </select>
-  </div>
-)}
-
+        {/* Member dropdown */}
+        {selectedHof && members.length > 0 && (
+          <div className="input-group">
+            <label>Select Member (Deceased)</label>
+            <select
+              value={selectedMember}
+              onChange={(e) => setSelectedMember(e.target.value)}
+              required
+            >
+              <option value="">Select Member</option>
+              {members.map((m) => (
+                <option key={m._id} value={m._id}>
+                  {m.name}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
 
         {/* Next HOF if deceased was HOF */}
         {isHof && (
@@ -350,8 +357,8 @@ const AddDeathRecord = () => {
         <div className="input-group">
           <input
             type="text"
-            name="church"
-            value={formData.church}
+            name="conducted_by"
+            value={formData.conducted_by}
             onChange={handleChange}
           />
           <label>Conducted by</label>
