@@ -71,4 +71,34 @@
   .about-text h2 {
     font-size: 1.8rem;
   }
+  /* --- Add these styles for the ward table --- */
+
+.ward-table {
+  width: 100%;
+  border-collapse: collapse; /* Gives it clean lines */
+  margin-top: 20px;
+  font-size: 0.95rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.ward-table th,
+.ward-table td {
+  border: 1px solid #ddd;
+  padding: 10px 12px;
+  text-align: left;
+}
+
+.ward-table th {
+  background-color: #f4f4f4; /* Light gray header */
+  font-weight: bold;
+  color: #333;
+}
+
+.ward-table tbody tr:nth-child(even) {
+  background-color: #f9f9f9; /* Adds zebra striping for readability */
+}
+
+.ward-table tbody tr:hover {
+  background-color: #f1f1f1; /* Highlight on hover */
+}
 }
